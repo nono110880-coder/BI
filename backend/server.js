@@ -1,13 +1,20 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+
+// Load environment variables FIRST
+dotenv.config();
+
+// Database
 const { testConnection } = require('./config/database');
+
+// Middlewares
 const errorHandler = require('./middlewares/errorHandler');
+
+// Routes
 const masterRoutes = require('./routes/masterRoutes');
 const batchRoutes = require('./routes/batchRoutes');
 const userRoutes = require('./routes/userRoutes');
-
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -56,13 +63,13 @@ app.get('/api/test-db', async (req, res) => {
       try {
         const [rows2] = await pool.query('SELECT * FROM rekanan LIMIT 5');
         rekanan = rows2;
-      } catch (e2) {}
+      } catch (e2) { }
     }
     let batches = [];
     try {
       const [rows3] = await pool.query('SELECT id, no_batch, no_dokumen, perihal, nama_rekanan FROM batches LIMIT 5');
       batches = rows3;
-    } catch (e3) {}
+    } catch (e3) { }
 
     res.json({
       success: true,
@@ -85,7 +92,7 @@ app.get('/api/debug-batches', async (req, res) => {
   try {
     const { pool } = require('./config/database');
     const [countRows] = await pool.query('SELECT COUNT(*) AS total FROM batches WHERE is_deleted = 0');
-    
+
     // Test exact query
     const querySql = `
       SELECT 
@@ -101,7 +108,7 @@ app.get('/api/debug-batches', async (req, res) => {
       LIMIT 20 OFFSET 0
     `;
     const [batchRows] = await pool.query(querySql);
-    
+
     let coaError = null;
     let coaColumns = [];
     try {

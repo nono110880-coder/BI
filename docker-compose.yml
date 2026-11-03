@@ -1,0 +1,63 @@
+services:
+
+  db:
+    image: mysql:8.4
+    container_name: bi-mysql
+    restart: unless-stopped
+
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_DATABASE: form_batch_erp
+
+    ports:
+      - "127.0.0.1:3306:3306"
+
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - mysqladmin ping -h 127.0.0.1 -uroot --silent
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+
+    container_name: bi-backend
+    restart: unless-stopped
+
+    environment:
+      PORT: 5000
+      NODE_ENV: development
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: form_batch_erp
+      DB_USER: root
+      DB_PASSWORD: ""
+
+    ports:
+      - "127.0.0.1:5000:5000"
+
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+
+    container_name: bi-frontend
+    restart: unless-stopped
+
+    ports:
+      - "127.0.0.1:5173:5173"
+
+    depends_on:
+      - backend
+
+volumes:
+  mysql_data:
